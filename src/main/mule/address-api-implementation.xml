@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	
+	<flow name="insertAddressFlow" doc:id="58d007f2-3ba2-4827-b456-d6a668845e22" maxConcurrency="4">
+		<set-variable value="#[payload]" doc:name="Store payload into dates" doc:id="bc62b5e6-792f-43c7-bdd0-0d537bc257d9" variableName="addressData"/>
+		<ee:transform doc:name="Transform Dates" doc:id="416bdf8d-a9b8-411a-9e9a-3553eb8607b9" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="addressDates" ><![CDATA[%dw 2.0
+output application/java
+type derbyDateFormat = String{format:"yyyy-MM-dd hh:mm:ss"}
+type hhiDateFormat = LocalDateTime {format:"yyyy-MM-dd'T'HH:mm:ss"}
+var createDate = (vars.addressData.CREATEDATE as hhiDateFormat) as derbyDateFormat
+var updateDate = (vars.addressData.UPDATEDATE as hhiDateFormat) as derbyDateFormat
+---
+{
+	createDate: createDate,
+	updateDate: updateDate
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Form Address Table Data" doc:id="5f48cd32-dc52-4e8b-92a5-008ba6be4840" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="addressTableData" ><![CDATA[%dw 2.0
+output application/json
+var fieldsToFilter = ["CREATEDATE","UPDATEDATE"]
+var filterDatesFunc = (value, key, index) -> !(fieldsToFilter contains (key) as String)
+fun handleDates(addressData) = 
+do{
+	//var addressWithoutDateFields = vars.addressData filterObject((value, key, index) -> !(fieldsToFilter contains (key) as String)) 
+	var addressWithoutDateFields =  filterObject(vars.addressData, filterDatesFunc) 
+	var addressData = addressWithoutDateFields  ++ 
+	{
+		CREATEDATE : vars.addressDates.createDate,
+		UPDATEDATE : vars.addressDates.updateDate
+	}
+	---
+	addressData
+}
+---
+handleDates(vars.addressData)]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<db:insert doc:name="Insert into Address Table" doc:id="8182b449-0407-43ba-a56c-fb0c482661bf" config-ref="Derby_Database_Config" queryTimeout="180">
+			<reconnect />
+			<db:sql ><![CDATA[INSERT INTO "HHIDB"."ADDRESSDETAILS" (BUILDINGNAM,BUILDINGNUMBER,BLOCKNUMBER,FLOORNUMBER,STREET,ADDRESSTYPE,CITY,STATE,PIN,COUNTRY,PERSONID,CUSTOMERID,CREATEDATE,UPDATEDATE) 
+VALUES (:BUILDINGNAME,:BUILDINGNUMBER,:BLOCKNUMBER,:FLOORNUMBER,:STREET,:ADDRESSTYPE,:CITY,:STATE,:PIN,:COUNTRY,:PERSONID,:CUSTOMERID,:CREATEDATE,:UPDATEDATE) ]]></db:sql>
+			<db:input-parameters ><![CDATA[#[vars.addressTableData]]]></db:input-parameters>
+		</db:insert>
+		<set-payload value="Insert Successful" doc:name="Set Payload" doc:id="68e9e7f5-e5fb-499c-88b1-b36d591528ab" />
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="96d2ed90-ab84-45b8-a0f8-efee6fd554bc" >
+				<logger level="INFO" doc:name="Logger" doc:id="e4cd204e-fcc5-4c70-80b4-b982f4fdd080" message='#["Error when inserting Address:Customer ID= " ++ vars.addressTableData.CUSTOMERID default "blank"]'/>
+				<ee:transform doc:name="Form Error Data" doc:id="4a5ed8d0-3ad1-4f55-8cd4-526df94ed327" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/javad
+var addressDataStr = write(vars.addressTableData, "text/plain")
+---
+{
+	ErrorData1			: 			addressDataStr, 
+	ErrorData2			:			"" ,
+	ErrorReason			:			error.description ,
+	ErrorReasonDetailed : 			error.detailedDescription,
+	ErrorType			:			error.errorType,
+	ErrorStatus			:			"Open",
+	createdate			:			now() as String{format:"yyyy-MM-dd HH:mm:ss"},
+	updatedate			:			now() as String{format:"yyyy-MM-dd HH:mm:ss"}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<try doc:name="Try" doc:id="51ae05ea-1cb9-4835-8640-4866936da0fb" >
+					<db:insert doc:name="Insert Error" doc:id="cdaaedbb-1bc9-47c3-ba38-95a2593e3c15" config-ref="Derby_Database_Config">
+					<db:sql><![CDATA[insert into "HHIDB"."ERRORS"(ErrorData1, ErrorData2 ,ErrorReason ,ErrorReasonDetailed ,ErrorType ,ErrorStatus ,createdate ,updatedate) 
+values(:ErrorData1, :ErrorData2 ,:ErrorReason ,:ErrorReasonDetailed ,:ErrorType ,:ErrorStatus ,:createdate ,:updatedate)]]></db:sql>
+					<db:input-parameters><![CDATA[#[payload]]]></db:input-parameters>
+				</db:insert>
+					<error-handler >
+						<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="0b7f5271-2b2c-46b6-9be3-d2dfd1606f1f" >
+							<logger level="INFO" doc:name="Logger" doc:id="0e6e4e92-02a3-4fcb-86da-2b601b390918" message='#["Could not insert Error:: " ++ error.detailedDescription]'/>
+						</on-error-propagate>
+					</error-handler>
+				</try>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

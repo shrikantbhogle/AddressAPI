@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	
+	<db:config name="Derby_Database_Config" doc:name="Database Config" doc:id="357c0338-50b0-41da-962f-47bb2f5170fa" >
+		<db:generic-connection url="${derby.url}" driverClassName="org.apache.derby.jdbc.ClientDriver" user="${derby.user}" password="${secure::derby.password}">
+			<db:pooling-profile maxPoolSize="${db.connection.pool.size}" maxWait="${db.connection.pool.maxwait}"/>
+		</db:generic-connection>
+	</db:config>
+	
+	<http:listener-config name="AddressApi-HttpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="83393174-4611-4b35-8f39-92946d262b90" file="properties/AddressAPI_Secure_${ENV}.properties" key="addressapi" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="4e77f414-1f38-48f5-8af1-6fd41642cad8" file="properties/AddressAPI_${ENV}.properties" />
+	
+	
+</mule>
