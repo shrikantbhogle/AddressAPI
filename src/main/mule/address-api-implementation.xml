@@ -62,7 +62,7 @@ VALUES (:BUILDINGNAME,:BUILDINGNUMBER,:BLOCKNUMBER,:FLOORNUMBER,:STREET,:ADDRESS
 				<ee:transform doc:name="Form Error Data" doc:id="4a5ed8d0-3ad1-4f55-8cd4-526df94ed327" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
-output application/javad
+output application/json
 var addressDataStr = write(vars.addressTableData, "text/plain")
 ---
 {
