@@ -1,0 +1,15 @@
+{
+  "BUILDINGNUMBER": "bbb",
+  "BLOCKNUMBER": "bbb",
+  "FLOORNUMBER": "bbb",
+  "STREET": "bbb",
+  "ADDRESSTYPE": "Residential",
+  "CITY": "bbb",
+  "STATE": "bbb",
+  "PIN": 11,
+  "COUNTRY": "bbb",
+  "PERSONID": "bbb",
+  "CUSTOMERID": "bbb",
+  "CREATEDATE": "2020-01-22T01:01:01",
+  "UPDATEDATE": "2020-01-22T01:01:01"
+}

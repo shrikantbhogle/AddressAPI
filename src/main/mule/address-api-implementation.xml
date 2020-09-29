@@ -51,7 +51,7 @@ handleDates(vars.addressData)]]></ee:set-variable>
 		</ee:transform>
 		<db:insert doc:name="Insert into Address Table" doc:id="8182b449-0407-43ba-a56c-fb0c482661bf" config-ref="Derby_Database_Config" queryTimeout="180">
 			<reconnect />
-			<db:sql ><![CDATA[INSERT INTO "HHIDB"."ADDRESSDETAILS" (BUILDINGNAM,BUILDINGNUMBER,BLOCKNUMBER,FLOORNUMBER,STREET,ADDRESSTYPE,CITY,STATE,PIN,COUNTRY,PERSONID,CUSTOMERID,CREATEDATE,UPDATEDATE) 
+			<db:sql ><![CDATA[INSERT INTO "HHIDB"."ADDRESSDETAILS" (BUILDINGNAME,BUILDINGNUMBER,BLOCKNUMBER,FLOORNUMBER,STREET,ADDRESSTYPE,CITY,STATE,PIN,COUNTRY,PERSONID,CUSTOMERID,CREATEDATE,UPDATEDATE) 
 VALUES (:BUILDINGNAME,:BUILDINGNUMBER,:BLOCKNUMBER,:FLOORNUMBER,:STREET,:ADDRESSTYPE,:CITY,:STATE,:PIN,:COUNTRY,:PERSONID,:CUSTOMERID,:CREATEDATE,:UPDATEDATE) ]]></db:sql>
 			<db:input-parameters ><![CDATA[#[vars.addressTableData]]]></db:input-parameters>
 		</db:insert>
@@ -63,14 +63,14 @@ VALUES (:BUILDINGNAME,:BUILDINGNUMBER,:BLOCKNUMBER,:FLOORNUMBER,:STREET,:ADDRESS
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
-var addressDataStr = write(vars.addressTableData, "text/plain")
+var addressDataStr = write(vars.addressTableData, "application/json")
 ---
 {
 	ErrorData1			: 			addressDataStr, 
 	ErrorData2			:			"" ,
 	ErrorReason			:			error.description ,
 	ErrorReasonDetailed : 			error.detailedDescription,
-	ErrorType			:			error.errorType,
+	ErrorType			:			error.errorType.asString,
 	ErrorStatus			:			"Open",
 	createdate			:			now() as String{format:"yyyy-MM-dd HH:mm:ss"},
 	updatedate			:			now() as String{format:"yyyy-MM-dd HH:mm:ss"}

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+	xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<munit:config name="address-api-Interface-test-suite.xml" />
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="0abdff4a-b216-4744-bd00-8528a744c5b5" >
+		<http:request-connection host="localhost" port="8081" />
+	</http:request-config>
+	<munit:test name="address-api-Interface-test-suite-addressapi-mainTest" doc:id="a0977cbd-099c-43b8-85e9-a5c15e68f7f6" description="Test">
+		<munit:enable-flow-sources >
+			<munit:enable-flow-source value="addressapi-main" />
+		</munit:enable-flow-sources>
+		<munit:execution>
+			<http:request method="POST" doc:name="Request" doc:id="92f7faf4-4c0c-48a5-add6-115e7bb74696" config-ref="HTTP_Request_configuration" path="/api/addresses" outputMimeType="application/json">
+				<http:body ><![CDATA[#[output application/json
+---
+{
+  "BUILDINGNAME": "aaa",
+  "BUILDINGNUMBER": "aaa",
+  "BLOCKNUMBER": "aaa",
+  "FLOORNUMBER": "aaa",
+  "STREET": "aaa",
+  "ADDRESSTYPE": "Residential",
+  "CITY": "aaa",
+  "STATE": "aaa",
+  "PIN": 11,
+  "COUNTRY": "aaa",
+  "PERSONID": "aaa",
+  "CUSTOMERID": "aaa",
+  "CREATEDATE": "2020-01-22T01:01:01",
+  "UPDATEDATE": "2020-01-22T01:01:01"
+}]]]></http:body>
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Content-Type" : "application/json"
+}]]]></http:headers>
+			</http:request>
+		</munit:execution>
+	</munit:test>
+
+
+</mule>

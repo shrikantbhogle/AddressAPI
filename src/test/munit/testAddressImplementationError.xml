@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config doc:name="MUnit configuration" doc:id="0b74de19-ca16-4719-8705-1a450fcc8624" name="firstParameterization">
+		<munit:parameterizations >
+			<munit:parameterization name="inputfileParameterized" >
+				<munit:parameters >
+					<munit:parameter propertyName="inputfile" value="address2.json" />
+				</munit:parameters>
+			</munit:parameterization>
+		</munit:parameterizations>
+	</munit:config>
+	<munit:test name="testAddressImplementationError-insertAddressFlowTest" doc:id="2c8562f2-dc96-4f80-92ba-ffb5c7c1ce5e" description="Test">
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="311ea4b6-af31-400c-b740-c4b1018b3a76">
+			<munit:payload value='#[MunitTools::getResourceAsString("${inputfile}")]' mediaType="application/json" />
+		</munit:set-event>
+			<try doc:name="Try" doc:id="0c86f4dd-2610-4804-b100-12d84e411118" >
+				<flow-ref doc:name="Flow-ref to insertAddressFlow" doc:id="8e02a0a9-7dfa-4af6-9f0a-68ba767f9d83" name="insertAddressFlow" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="5520d204-4db1-4518-9a0f-9978ef1eab7e" >
+						<set-variable value="#[vars.error]" doc:name="Set Variable" doc:id="ded8a8ab-8056-4ac1-af6b-b70c383c3c19" variableName="errorObj"/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="8df51f54-a2e2-49bc-ade1-d9e55eef187a" expression='#[payload != "Insert Successful"]' is="#[MunitTools::equalTo(true)]"/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>
