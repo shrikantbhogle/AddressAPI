@@ -7,7 +7,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
 	
 	<flow name="insertAddressFlow" doc:id="58d007f2-3ba2-4827-b456-d6a668845e22" maxConcurrency="4">
-		<set-variable value="#[payload]" doc:name="Store payload into dates" doc:id="bc62b5e6-792f-43c7-bdd0-0d537bc257d9" variableName="addressData"/>
+		<set-variable value="#[payload]" doc:name="Store payload " doc:id="bc62b5e6-792f-43c7-bdd0-0d537bc257d9" variableName="addressData"/>
 		<ee:transform doc:name="Transform Dates" doc:id="416bdf8d-a9b8-411a-9e9a-3553eb8607b9" >
 			<ee:message >
 			</ee:message>
@@ -55,7 +55,8 @@ handleDates(vars.addressData)]]></ee:set-variable>
 VALUES (:BUILDINGNAME,:BUILDINGNUMBER,:BLOCKNUMBER,:FLOORNUMBER,:STREET,:ADDRESSTYPE,:CITY,:STATE,:PIN,:COUNTRY,:PERSONID,:CUSTOMERID,:CREATEDATE,:UPDATEDATE) ]]></db:sql>
 			<db:input-parameters ><![CDATA[#[vars.addressTableData]]]></db:input-parameters>
 		</db:insert>
-		<set-payload value="Insert Successful" doc:name="Set Payload" doc:id="68e9e7f5-e5fb-499c-88b1-b36d591528ab" />
+		<set-payload value="Address Added !!" doc:name="Set Payload" doc:id="68e9e7f5-e5fb-499c-88b1-b36d591528ab" />
+		<set-variable value="" doc:name="Set httpstatus" doc:id="43cceb4a-fc77-4ee3-8158-3e55bcee7d56" variableName="201"/>
 		<error-handler >
 			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="96d2ed90-ab84-45b8-a0f8-efee6fd554bc" >
 				<logger level="INFO" doc:name="Logger" doc:id="e4cd204e-fcc5-4c70-80b4-b982f4fdd080" message='#["Error when inserting Address:Customer ID= " ++ vars.addressTableData.CUSTOMERID default "blank"]'/>
@@ -83,6 +84,8 @@ var addressDataStr = write(vars.addressTableData, "application/json")
 values(:ErrorData1, :ErrorData2 ,:ErrorReason ,:ErrorReasonDetailed ,:ErrorType ,:ErrorStatus ,:createdate ,:updatedate)]]></db:sql>
 					<db:input-parameters><![CDATA[#[payload]]]></db:input-parameters>
 				</db:insert>
+					<set-payload value="Error has occurred during insert" doc:name="Set Payload" doc:id="d9b72074-2b3a-4f98-a712-be47b634abb7" />
+					<set-variable value="400" doc:name="Set httpstatus" doc:id="bae8de36-83de-41f7-b8de-28b8b969b9b6" variableName="httpstatus"/>
 					<error-handler >
 						<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="0b7f5271-2b2c-46b6-9be3-d2dfd1606f1f" >
 							<logger level="INFO" doc:name="Logger" doc:id="0e6e4e92-02a3-4fcb-86da-2b601b390918" message='#["Could not insert Error:: " ++ error.detailedDescription]'/>

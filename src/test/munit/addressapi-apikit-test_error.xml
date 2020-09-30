@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd http://www.mulesoft.org/schema/mule/munit-tools http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd ">
+    <http:request-config name="HTTP_Request_Configuration2" basePath="/api" responseTimeout="300000">
+        <http:request-connection host="localhost" port="8081" />
+    </http:request-config>
+    
+	<munit:config name="addressapi-apikit-test.xml">
+		<munit:parameterizations >
+			<munit:parameterization name="postrequest_parameterized" >
+				<munit:parameters >
+					<munit:parameter propertyName="postrequest" value="scaffolder/request/post_addresses_error.json" />
+				</munit:parameters>
+			</munit:parameterization>
+		</munit:parameterizations>
+	</munit:config>
+    <munit:test name="post:\addresses:application\json:addressapi-config-201-application\json-FlowTest-error" description="Verifying functionality of [post:\addresses:application\json:addressapi-config-201-application\json]" expectedErrorType="ANY">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="addressapi-main" />
+            <munit:enable-flow-source value="post:\addresses:application\json:addressapi-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-payload value="#[MunitTools::getResourceAsString('${postrequest}')]" />
+        </munit:behavior>
+        <munit:execution>
+            <http:request config-ref="HTTP_Request_Configuration2" method="POST" path="/addresses">
+                <http:headers>#[{"Accept":"application/json","Content-Type":"application/json"}]</http:headers>
+            </http:request>
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-that expression="#[error.description]" is='#[MunitTools::containsString("400")]' message="The HTTP Status code is not correct!" doc:name="Assert That Status Code is 400" />
+        </munit:validation>
+    </munit:test>
+</mule>
